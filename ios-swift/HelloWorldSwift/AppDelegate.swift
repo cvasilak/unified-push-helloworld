@@ -20,7 +20,8 @@ import AeroGearPush
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
-    let device = AGDeviceRegistration(serverURL: NSURL(string: "<# URL of the running AeroGear UnifiedPush Server #>")!)
+    let url = "<# URL of the running AeroGear UnifiedPush Server #>"
+    
     var window: UIWindow?
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
@@ -31,7 +32,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UIApplication.sharedApplication().registerForRemoteNotifications()
         
         // Send metrics when app is launched due to push notification
-        device.sendMetricWhenAppLaunched(launchOptions)
+        AGPushAnalytics.sendMetricsWhenAppLaunched(NSURL(string: url)!, launchOptions: launchOptions)
         
         // When the app is launched due to a push notification
         if let options = launchOptions {
@@ -81,8 +82,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: NSData) {
         // time to register user with the "AeroGear UnifiedPush Server"
         
+        let device = AGDeviceRegistration(serverURL:  NSURL(string: url)!)
+        
         // perform registration of this device
-        self.device.registerWithClientInfo({ (clientInfo: AGClientDeviceInformation!) in
+        device.registerWithClientInfo({ (clientInfo: AGClientDeviceInformation!) in
             
             // set the deviceToken
             clientInfo.deviceToken = deviceToken
@@ -133,7 +136,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         println("UPS message received: \(userInfo)")
         
         // Send metrics when app is launched due to push notification
-        device.sendMetricsWhenAppAwoken(application.applicationState, userInfo: userInfo)
+        AGPushAnalytics.sendMetricsWhenAppAwoken(NSURL(string: url)!, applicationState: application.applicationState, userInfo: userInfo)
 
     }
 }

@@ -85,6 +85,7 @@ typedef struct _NSZone NSZone;
 #if defined(__has_feature) && __has_feature(modules)
 @import ObjectiveC;
 @import Foundation.NSURLSession;
+@import UIKit;
 #endif
 
 #pragma clang diagnostic ignored "-Wproperty-attribute-mismatch"
@@ -139,7 +140,12 @@ SWIFT_CLASS("_TtC12AeroGearPush20AGDeviceRegistration")
 
 /// <ul><li><p>Registers your mobile device to the AeroGear Push server so it can</p></li><li><p>start receiving messages.</p></li><li></li><li><p>@param clientInfo A block object which passes in an implementation of the AGClientDeviceInformation protocol that</p></li><li><p>holds configuration metadata that would be posted to the server during the registration process.</p></li><li></li><li><p>@param success A block object to be executed when the registration operation finishes successfully.</p></li><li><p>This block has no return value.</p></li><li></li><li><p>@param failure A block object to be executed when the registration operation finishes unsuccessfully.</p></li><li><p>This block has no return value and takes one argument: The <code>NSError</code> object describing</p></li><li><p>the error that occurred during the registration process.</p></li><li></li></ul>
 - (void)registerWithClientInfo:(void (^ __null_unspecified)(id <AGClientDeviceInformation> __nonnull))clientInfo success:(void (^ __null_unspecified)(void))success failure:(void (^ __null_unspecified)(NSError * __nonnull))failure;
-- (void)sendMetrics:(NSString * __nonnull)messageId completionHandler:(void (^ __nonnull)(NSError * __nullable))completionHandler;
+
+/// <ul><li><p>Send metrics to the AeroGear Push server when the app is first launched or bring from background to</p></li><li><p>foreground due to a push notification.</p></li><li></li><li><p>@param messageId The identifier of this push notification.</p></li><li></li><li><p>@param completionHandler A block object to be executed when the send metrics operation finishes.</p></li><li><p>Defaulted to no action.</p></li></ul>
+- (void)sendMetricWhenAppLaunched:(NSDictionary * __nullable)launchOptions completionHandler:(void (^ __nonnull)(NSError * __nullable))completionHandler;
+
+/// <ul><li><p>Send metrics to the AeroGear Push server when the app is first launched or bring from background to</p></li><li><p>foreground due to a push notification.</p></li><li></li><li><p>@param messageId The identifier of this push notification.</p></li><li></li><li><p>@param completionHandler A block object to be executed when the send metrics operation finishes.</p></li><li><p>Defaulted to no action.</p></li></ul>
+- (void)sendMetricsWhenAppAwoken:(UIApplicationState)applicationState userInfo:(NSDictionary * __nonnull)userInfo completionHandler:(void (^ __nonnull)(NSError * __nullable))completionHandler;
 - (void)URLSession:(NSURLSession * __nonnull)session task:(NSURLSessionTask * __nonnull)task willPerformHTTPRedirection:(NSHTTPURLResponse * __nonnull)redirectResponse newRequest:(NSURLRequest * __nonnull)redirectReq completionHandler:(void (^ __nonnull)(NSURLRequest * __null_unspecified))completionHandler;
 @end
 

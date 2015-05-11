@@ -30,17 +30,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UIApplication.sharedApplication().registerUserNotificationSettings(settings)
         UIApplication.sharedApplication().registerForRemoteNotifications()
         
+        // Send metrics when app is launched due to push notification
+        device.sendMetricWhenAppLaunched(launchOptions)
+        
         // When the app is launched due to a push notification
         if let options = launchOptions {
             if let option : NSDictionary = options[UIApplicationLaunchOptionsRemoteNotificationKey] as? NSDictionary {
                 let defaults: NSUserDefaults = NSUserDefaults.standardUserDefaults();
-                
-                // 1. Get metrics id to save it for latter usage when doing regitration
-                if let metrics = option["aerogear-push-id"] as? String {
-                    self.device.sendMetrics(metrics)
-                }
-                
-                // 2. Send a message received signal to display the notification in the table.
+                // Send a message received signal to display the notification in the table.
                 if let aps : NSDictionary = option["aps"] as? NSDictionary {
                     if let alert : String = aps["alert"] as? String {
                         defaults.setObject(alert, forKey: "message_received")
@@ -135,18 +132,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         NSNotificationCenter.defaultCenter().postNotification(notification)
         println("UPS message received: \(userInfo)")
         
-        if application.applicationState == UIApplicationState.Inactive || application.applicationState == UIApplicationState.Background  {
-            //opened from a push notification when the app was on background
-            if let messageId = userInfo["aerogear-push-id"] as? String {
-                self.device.sendMetrics(messageId, completionHandler:{(error: NSError?) in
-                    if error != nil {
-                        println("Error when sending metrics")
-                        return
-                    }
-                    println("Metrics sent for app coming back from background")
-                })
-            }
-        }
+        // Send metrics when app is launched due to push notification
+        device.sendMetricsWhenAppAwoken(application.applicationState, userInfo: userInfo)
 
     }
 }

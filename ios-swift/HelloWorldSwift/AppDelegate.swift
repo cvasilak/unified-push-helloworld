@@ -21,19 +21,19 @@ import AeroGearPush
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     let url = "<# URL of the running AeroGear UnifiedPush Server #>"
-    
+
     var window: UIWindow?
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
-        
+
         // bootstrap the registration process by asking the user to 'Accept' and then register with APNS thereafter
         let settings = UIUserNotificationSettings(forTypes: .Alert | .Badge | .Sound, categories: nil)
         UIApplication.sharedApplication().registerUserNotificationSettings(settings)
         UIApplication.sharedApplication().registerForRemoteNotifications()
-        
+
         // Send metrics when app is launched due to push notification
-        AGPushAnalytics.sendMetricsWhenAppLaunched(NSURL(string: url)!, launchOptions: launchOptions)
-        
+        AGPushAnalytics.sendMetricsWhenAppLaunched(launchOptions)
+
         // When the app is launched due to a push notification
         if let options = launchOptions {
             if let option : NSDictionary = options[UIApplicationLaunchOptionsRemoteNotificationKey] as? NSDictionary {
@@ -51,9 +51,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 }
             }
         }
-        
+
         UIApplication.sharedApplication().setStatusBarStyle(.LightContent, animated: false)
-        
+
         return true
     }
 
@@ -78,65 +78,65 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationWillTerminate(application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
-    
+
     func application(application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: NSData) {
         // time to register user with the "AeroGear UnifiedPush Server"
-        
+
         let device = AGDeviceRegistration(serverURL:  NSURL(string: url)!)
-        
+
         // perform registration of this device
         device.registerWithClientInfo({ (clientInfo: AGClientDeviceInformation!) in
-            
+
             // set the deviceToken
             clientInfo.deviceToken = deviceToken
-            
+
             // You need to fill the 'Variant Id' together with the 'Variant Secret'
             // both received when performing the variant registration with the server.
             // See section "Register an iOS Variant" in the guide:
             // https://aerogear.org/docs/unifiedpush/aerogear-push-ios/
             clientInfo.variantID = "<# Variant Id #>"
             clientInfo.variantSecret = "<# Variant Secret #>"
-            
+
             // --optional config--
             // set some 'useful' hardware information params
             let currentDevice = UIDevice()
-            
+
             clientInfo.operatingSystem = currentDevice.systemName
             clientInfo.osVersion = currentDevice.systemVersion
             clientInfo.deviceType = currentDevice.model
             },
-            
+
             success: {
                 // successfully registered!
                 println("successfully registered with UPS!")
-                
+
                 // send NSNotification for success_registered, will be handle by registered AGViewController
                 let notification = NSNotification(name:"success_registered", object: nil)
                 NSNotificationCenter.defaultCenter().postNotification(notification)
             },
-            
+
             failure: {(error: NSError!) in
                 println("Error Registering with UPS: \(error.localizedDescription)")
-                
+
                 let notification = NSNotification(name:"error_register", object: nil)
                 NSNotificationCenter.defaultCenter().postNotification(notification)
             })
     }
-    
+
     func application(application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: NSError) {
         let notification:NSNotification = NSNotification(name:"error_register", object:nil, userInfo:nil)
         NSNotificationCenter.defaultCenter().postNotification(notification)
         println("Unified Push registration Error \(error)")
     }
-    
+
     func application(application: UIApplication, didReceiveRemoteNotification userInfo: [NSObject: AnyObject]) {
         // When a message is received, send NSNotification, would be handled by registered ViewController
         let notification:NSNotification = NSNotification(name:"message_received", object:nil, userInfo:userInfo)
         NSNotificationCenter.defaultCenter().postNotification(notification)
         println("UPS message received: \(userInfo)")
-        
+
         // Send metrics when app is launched due to push notification
-        AGPushAnalytics.sendMetricsWhenAppAwoken(NSURL(string: url)!, applicationState: application.applicationState, userInfo: userInfo)
+        AGPushAnalytics.sendMetricsWhenAppAwoken(application.applicationState, userInfo: userInfo)
 
     }
 }
